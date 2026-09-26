@@ -1,5 +1,4 @@
 from google import genai
-from google.genai import types
 
 
 def create_client(api_key: str) -> genai.Client:
@@ -7,23 +6,20 @@ def create_client(api_key: str) -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
-def request_gemini(client, model, instruction, prompt, tools=None):
-    """Make a request to Gemini API using the current Google GenAI SDK."""
+def call_gemini(client, model, system_instruction, user_prompt):
+    """Call Gemini using the Interactions API (recommended by Google)."""
     # Ensure model name has the proper prefix
     if not model.startswith("models/"):
         model = f"models/{model}"
     
-    config = types.GenerateContentConfig(system_instruction=instruction)
-    return client.models.generate_content(
+    response = client.chats.create(
         model=model,
-        contents=prompt,
-        config=config,
+        config=genai.types.GenerateContentConfig(
+            system_instruction=system_instruction
+        ),
     )
-
-
-def call_gemini(client, model, system_instruction, user_prompt):
-    """Call Gemini and return just the text response."""
-    response = request_gemini(client, model, system_instruction, user_prompt)
+    
+    response = response.send_message(user_prompt)
     return response.text
 
 
@@ -39,16 +35,14 @@ Additional Context: {extra_context}
 
 def run_research_agent(client, model, job_title, salary, context="", reporter=None):
     """Research agent that analyzes job tasks and AI replacement potential."""
-    system_instruction = """You are a job analysis specialist. Your job is to:
-1. Understand the job title and its typical responsibilities
-2. Break down the job into 5-8 specific, measurable tasks
-3. For each task, evaluate how automatable it is
-4. Consider current AI capabilities in 2024-2026
-5. Generate structured analysis of what parts of the job AI can do
+    system_instruction = """You are a job analysis specialist. Analyze the job and provide a brief assessment (2-3 paragraphs max) covering:
+1. Top 5-6 core tasks for this role
+2. Which tasks are most automatable by AI
+3. Overall automation potential as a percentage
 
-Be specific and realistic. Consider both the technical feasibility and business impact."""
+Be concise and direct."""
 
-    prompt = build_job_analysis_prompt(job_title, salary, context)
+    prompt = f"{build_job_analysis_prompt(job_title, salary, context)}\n\nProvide a brief task analysis and automation assessment."
     return call_gemini(
         client=client,
         model=model,
@@ -66,17 +60,15 @@ def run_product_agent(
     research_results: str = '',
 ) -> str:
     """Business agent that determines risk level and replacement cost."""
-    system_instruction = """You are a business analyst specializing in AI automation impact. Your job is to:
-1. Review the job analysis and task breakdown
-2. Determine the overall AI replacement risk (Low/Medium/High)
-3. Calculate what percentage of the job can be automated
-4. Estimate the monthly cost to replace this job with AI solutions
-5. Identify which AI tools would be most effective
-6. Consider partial automation vs full replacement
+    system_instruction = """You are a business analyst. Keep response to 2-3 paragraphs max.
+Assess:
+1. Overall AI replacement risk (Low/Medium/High)
+2. What percentage of the job can be automated
+3. Estimated monthly cost to automate this role
 
-Be data-driven but realistic about implementation challenges."""
+Be specific but concise."""
 
-    prompt = f"{build_job_analysis_prompt(job_title, salary, context)}\n\nTask Analysis:\n{research_results}"
+    prompt = f"{build_job_analysis_prompt(job_title, salary, context)}\n\nTask Analysis:\n{research_results[:500]}\n\nProvide a business risk assessment."
     return call_gemini(
         client=client,
         model=model,
@@ -95,23 +87,15 @@ def run_engineering_agent(
     business_analysis: str = '',
 ) -> str:
     """Technical agent that maps AI tools to job tasks."""
-    system_instruction = """You are a technical architect specializing in AI automation. Your job is to:
-1. Review the job analysis and business assessment
-2. Identify the specific AI tools and APIs that can automate each task
-3. Design a technical architecture for job automation
-4. Break down implementation into feasible pieces
-5. List required integrations (LLMs, databases, workflow tools, etc.)
-6. Estimate complexity and implementation time
+    system_instruction = """You are a technical architect. Keep response to 2-3 paragraphs max.
+Provide:
+1. Top 3-4 AI tools/services that could automate this job
+2. Implementation difficulty (Easy/Medium/Hard)
+3. Key technical challenges
 
-Focus on practical, available AI solutions in 2024-2026."""
+Be practical and concise."""
 
-    prompt = f"""{build_job_analysis_prompt(job_title, salary, context)}
-
-Task Analysis:
-{research_results}
-
-Business Analysis:
-{business_analysis}"""
+    prompt = f"{build_job_analysis_prompt(job_title, salary, context)}\n\nTask Analysis (summary):\n{research_results[:300]}\n\nProvide a technical implementation plan."
     return call_gemini(
         client=client,
         model=model,
@@ -131,32 +115,25 @@ def run_manager_agent(
     technical_plan: str,
 ) -> str:
     """Executive agent that synthesizes everything into a final risk report."""
-    system_instruction = """You are an executive advisor on AI automation impact. Your job is to:
-1. Synthesize all technical, business, and task analysis
-2. Create a clear, actionable risk assessment (Low/Medium/High)
-3. Provide specific recommendations for workers in this role
-4. Suggest skills to learn or pivot to avoid automation
-5. Estimate timeframe for realistic AI replacement
-6. Present both opportunities and risks
+    system_instruction = """You are an executive advisor. Keep response to 3-4 paragraphs max.
+Synthesize:
+1. Final risk assessment (Low/Medium/High)
+2. Top 2-3 recommendations for the worker
+3. Timeline for realistic automation (1-2 years, 3-5 years, 5+ years)
 
-Format your response as a professional report suitable for executives and workers."""
+Be actionable and concise."""
 
-    prompt = f"""EXECUTIVE JOB RISK ASSESSMENT REPORT
+    prompt = f"""Job Risk Assessment Summary
 
 Job Title: {job_title}
-Annual Salary: ${salary:,.2f}
-Additional Context: {context or 'Standard role'}
+Salary: ${salary:,.2f}
+Context: {context or 'Standard role'}
 
-=== RESEARCH FINDINGS ===
-{research_results}
+Research: {research_results[:300]}
+Business Analysis: {business_analysis[:300]}
+Technical Plan: {technical_plan[:300]}
 
-=== BUSINESS IMPACT ANALYSIS ===
-{business_analysis}
-
-=== TECHNICAL AUTOMATION ROADMAP ===
-{technical_plan}
-
-Please provide a comprehensive risk assessment and recommendations."""
+Provide a final executive summary and recommendations."""
 
     return call_gemini(
         client=client,
