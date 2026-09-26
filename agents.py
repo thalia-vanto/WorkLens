@@ -1,6 +1,5 @@
-import json
 from google import genai
-from tools import JOB_RISK_TOOLS, analyze_job_tasks, get_ai_capabilities
+from google.genai import types
 
 
 def create_client(api_key: str) -> genai.Client:
@@ -9,24 +8,19 @@ def create_client(api_key: str) -> genai.Client:
 
 
 def request_gemini(client, model, instruction, prompt, tools=None):
-    """Make a request to Gemini API with optional tools."""
-    generation_config = {}
-    if tools:
-        generation_config['tool_choice'] = 'any'
-    return client.interactions.create(
+    """Make a request to Gemini API using the current Google GenAI SDK."""
+    config = types.GenerateContentConfig(system_instruction=instruction)
+    return client.models.generate_content(
         model=model,
-        input=prompt,
-        system_instruction=instruction,
-        tools=tools or [],
-        generation_config=generation_config,
-        store=False,
+        contents=prompt,
+        config=config,
     )
 
 
 def call_gemini(client, model, system_instruction, user_prompt):
     """Call Gemini and return just the text response."""
     response = request_gemini(client, model, system_instruction, user_prompt)
-    return response.output_text
+    return response.text
 
 
 def build_job_analysis_prompt(job_title: str, salary: float, context: str) -> str:
@@ -51,34 +45,12 @@ def run_research_agent(client, model, job_title, salary, context="", reporter=No
 Be specific and realistic. Consider both the technical feasibility and business impact."""
 
     prompt = build_job_analysis_prompt(job_title, salary, context)
-
-    response = request_gemini(
-        client=client,
-        model=model,
-        instruction=system_instruction,
-        prompt=prompt,
-        tools=JOB_RISK_TOOLS,
-    )
-
-    task_analysis = []
-    if hasattr(response, 'tool_calls') and response.tool_calls:
-        for call in response.tool_calls[:5]:
-            if call.function.name == 'analyze_job_tasks':
-                job = call.function.arguments.get('job_title', '')
-                tasks = analyze_job_tasks(job)
-                if reporter:
-                    reporter(f"    [Researcher -> Tool] Analyzing tasks for: {job}")
-                    reporter(f"    [Tool -> Researcher] Identified {len(tasks)} core tasks")
-                task_analysis.extend(tasks)
-
-    summary = call_gemini(
+    return call_gemini(
         client=client,
         model=model,
         system_instruction=system_instruction,
         user_prompt=prompt,
     )
-
-    return summary
 
 
 def run_product_agent(
