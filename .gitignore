@@ -1,7 +1,16 @@
+# secrets
+.env
+
+# virutal environments
+.venv/
+venv/
+
+# python-generated files
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
-.venv/
 .pytest_cache/
-.streamlit/
+
+# OS files
+.DS_Store
+Thumbs.db

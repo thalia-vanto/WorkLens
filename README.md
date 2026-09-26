@@ -1,62 +1,62 @@
-# WorkLens
+# Multi-Agent AI Workshop: Building your team of AI Agents
 
-WorkLens is an AI workforce intelligence platform that helps people and businesses understand how exposed a job is to automation.
+A hands-on workshop project regarding agents and multi-agent systems: four Gemini agents turn a hackathon idea into a
+full blueprint. Research alone uses a tool. Product scopes the MVP, Engineering
+proposes an implementation, and Manager reconciles their work into the final plan. 
+***[Slides are here.](https://canva.link/ydwn3mvi62rwnvm)***
 
-## The problem
-AI is reshaping the workforce, but most people do not know which parts of their job are at risk, and companies struggle to estimate the real cost of replacing human labor with AI systems.
+<img width="3917" height="4805" alt="Image" src="https://github.com/user-attachments/assets/c644f4d7-fb52-48f0-ab86-48b39f8d3d98" />
 
-## The solution
-WorkLens breaks a profession into individual tasks and estimates the probability that each task could be automated by AI. It then combines those task-level insights into an overall risk score for the role. For businesses, the platform also estimates the monthly cost of replacing a worker with an AI agent, turning abstract AI disruption into a practical decision-making tool.
+## Setup
 
-## Why it matters
-This app is built for two audiences:
-- Workers who want to understand their future career vulnerability
-- Small businesses and employers who need a cost-aware view of AI adoption
+Install Python 3.11+, create a Gemini API key in
+[Google AI Studio](https://aistudio.google.com/app/apikey), and install dependencies:
 
-Instead of vague headlines, WorkLens gives actionable insight:
-- Which tasks are most likely to be automated
-- How risky a job is overall
-- What it might cost to replace a worker with AI
-- What skills or responsibilities remain more resilient to automation
-
-## Core features
-- Job selection and occupation-based analysis
-- Task-by-task AI automation probability breakdown
-- Overall job risk scoring
-- Estimated AI replacement cost for payroll and business planning
-- Simple, fast dashboard built for real-world exploration
-
-## Built for ShellHacks 2026
-This project was created as part of ShellHacks 2026 by Thalia Vanto, Santiago Valencia, Jeremiah and Kennedy Newsome. The goal is to stand out by combining workforce impact analysis with business cost modeling in a single product that is both useful and highly compelling.
-
-## Tech stack
-- Python
-- Streamlit
-- Pytest
-
-## Run locally
 ```bash
-cd WorkLens
-c:/python314/python.exe -m pip install -r requirements.txt
-c:/python314/python.exe -m streamlit run app.py --server.headless true --server.port 8501
+git clone https://github.com/thealepo/init-ai-preshell-2.git
+cd init-ai-preshell-2
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+cp .env.example .env
 ```
 
-## MVP highlights
-- Task-level AI replacement analysis
-- Clear business cost estimation
-- Fast interactive prototype
-- Simple but scalable foundation for future expansion
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` and copy with
+`Copy-Item .env.example .env`. On Debian/Ubuntu, install `python3-venv` if
+environment creation reports missing `ensurepip`.
 
-## Future vision
-We envision expanding WorkLens into a more advanced platform with:
-- live labor market data
-- occupation search and comparison
-- region and industry filters
-- AI adoption forecasting for companies
-- personalized career recommendations and reskilling insights
+Put your key in `.env`; keep this file private and excluded from Git:
 
-## Team
-Thalia Vanto
+```dotenv
+GEMINI_API_KEY=your_real_key_here
+GEMINI_MODEL=gemini-3.5-flash-lite
+```
 
-## Impact
-WorkLens helps people move from fear to clarity. It brings transparency to AI disruption and helps both employees and employers make smarter decisions in a rapidly changing economy.
+Run `python main.py`. Enter your idea and optional context, pressing Enter
+twice after each answer.
+
+## Future Directions
+
+There are many directions and features you can add onto this template to
+create a much more robust project. A few of the features you can add
+onto this are:
+
+- Implementing a `write_file` tool, in which the Manager agent writes the
+hackathon blueprint into a `.md` or `.txt` file (among others), allowing you
+to save the blueprint permanently on your machine.
+
+- Implementing an official Google Search tool. This may require a subscription
+due to Google's [current pricing](https://ai.google.dev/gemini-api/docs/pricing)
+listing Search grounding as unavailable on the Gemini 3.x API free tier.
+
+- Switching from the Gemini API to another API, such as the OpenAI API or
+Anthropic's API.
+
+- You can also replace our tool resource search in `tools.py` with what we call a vector database, establishing
+a RAG pipeline. This is a very important skill to learn and build intuition for, 
+so I recommend [this](https://www.geeksforgeeks.org/nlp/what-is-retrieval-augmented-generation-rag/) article to get started, 
+alongside [this](https://www.youtube.com/watch?v=ea2W8IogX80) video.
+
+## Gemini API Reference
+
+API reference: [Google's Interactions guide](https://ai.google.dev/gemini-api/docs/interactions-overview).
