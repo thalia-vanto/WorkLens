@@ -9,6 +9,10 @@ def create_client(api_key: str) -> genai.Client:
 
 def request_gemini(client, model, instruction, prompt, tools=None):
     """Make a request to Gemini API using the current Google GenAI SDK."""
+    # Ensure model name has the proper prefix
+    if not model.startswith("models/"):
+        model = f"models/{model}"
+    
     config = types.GenerateContentConfig(system_instruction=instruction)
     return client.models.generate_content(
         model=model,
