@@ -27,7 +27,7 @@ Instead of vague headlines, WorkLens gives actionable insight:
 - Simple, fast dashboard built for real-world exploration
 
 ## Built for ShellHacks 2026
-This project was created as part of ShellHacks 2026 by Thalia Vanto. The goal is to stand out by combining workforce impact analysis with business cost modeling in a single product that is both useful and highly compelling.
+This project was created as part of ShellHacks 2026 by Thalia Vanto, Santiago Valencia, Jeremiah and Kennedy Newsome. The goal is to stand out by combining workforce impact analysis with business cost modeling in a single product that is both useful and highly compelling.
 
 ## Tech stack
 - Python
